@@ -1,111 +1,99 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import "./object.css"; // Styling shu faylda
+import "./object.css"; // Yangi styling fayl nomi
 
 const API_URL = "https://66a6197023b29e17a1a1ba9a.mockapi.io/Object";
 
 const Object = () => {
-  const [obyektlar, setObyektlar] = useState([]);
-  const [newObyekt, setNewObyekt] = useState({ name: "", zona: "", mablag: "" });
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState({ name: "", zona: "", mablag: "" });
   const [editingId, setEditingId] = useState(null);
 
-  // Ma'lumotlarni olish
   useEffect(() => {
-    fetchObyektlar();
+    fetchItems();
   }, []);
 
-  const fetchObyektlar = async () => {
+  const fetchItems = async () => {
     try {
       const response = await axios.get(API_URL);
-      setObyektlar(response.data);
+      setItems(response.data);
     } catch (error) {
       console.error("Ma'lumotlarni olishda xatolik:", error);
     }
   };
 
-  // Inputlarni boshqarish
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewObyekt((prev) => ({ ...prev, [name]: value }));
+    setNewItem((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Obyekt qo‘shish yoki tahrirlash
   const handleSave = async () => {
-    if (!newObyekt.name || !newObyekt.zona || !newObyekt.mablag) {
+    if (!newItem.name || !newItem.zona || !newItem.mablag) {
       alert("Iltimos, barcha maydonlarni to‘ldiring!");
       return;
     }
 
     try {
       if (editingId) {
-        await axios.put(`${API_URL}/${editingId}`, newObyekt);
-        setObyektlar(obyektlar.map((o) => (o.id === editingId ? { ...o, ...newObyekt } : o)));
+        await axios.put(`${API_URL}/${editingId}`, newItem);
+        setItems(items.map((o) => (o.id === editingId ? { ...o, ...newItem } : o)));
         setEditingId(null);
       } else {
-        const response = await axios.post(API_URL, newObyekt);
-        setObyektlar([...obyektlar, response.data]);
+        const response = await axios.post(API_URL, newItem);
+        setItems([...items, response.data]);
       }
-      setNewObyekt({ name: "", zona: "", mablag: "" });
+      setNewItem({ name: "", zona: "", mablag: "" });
     } catch (error) {
       console.error("Saqlashda xatolik:", error);
     }
   };
 
-  // Obyektni o‘chirish
   const handleDelete = async (id) => {
     if (!window.confirm("Haqiqatan ham o‘chirmoqchimisiz?")) return;
     try {
       await axios.delete(`${API_URL}/${id}`);
-      setObyektlar(obyektlar.filter((o) => o.id !== id));
+      setItems(items.filter((o) => o.id !== id));
     } catch (error) {
       console.error("O‘chirishda xatolik:", error);
     }
   };
 
-  // Tahrirlash rejimi
-  const handleEdit = (obyekt) => {
-    setNewObyekt({ name: obyekt.name, zona: obyekt.zona, mablag: obyekt.mablag });
-    setEditingId(obyekt.id);
+  const handleEdit = (item) => {
+    setNewItem({ name: item.name, zona: item.zona, mablag: item.mablag });
+    setEditingId(item.id);
   };
 
   return (
-    <div className="personal-container">
-      <h1 className="personal-title">Obyektlar Boshqaruvi</h1>
+    <div className="container">
+      <h1 className="title">Obyektlar</h1>
 
-      <div className="personal-form">
-        <input type="text" name="name" placeholder="Obyekt nomi" value={newObyekt.name} onChange={handleChange} />
-        <input type="text" name="zona" placeholder="Ish zonasi" value={newObyekt.zona} onChange={handleChange} />
-
-        {/* Mablag‘ maydoni - foydalanuvchi o‘zi kiritadi yoki "Olinmagan"ni tanlaydi */}
-        <input type="text" name="mablag" placeholder="Mablag‘ (UZS) yoki 'Olinmagan'" value={newObyekt.mablag} onChange={handleChange} />
-
-        <button onClick={handleSave} className="add-btn">
-          {editingId ? "💾 Saqlash" : "➕ Qo‘shish"}
-        </button>
+      <div className="form-container">
+        <input type="text" name="name" placeholder="Obyekt nomi" value={newItem.name} onChange={handleChange} />
+        <input type="text" name="zona" placeholder="Ish zonasi" value={newItem.zona} onChange={handleChange} />
+        <input type="text" name="mablag" placeholder="Mablag‘ (UZS) yoki 'Olinmagan'" value={newItem.mablag} onChange={handleChange} />
+        <button onClick={handleSave} className="save-btn">{editingId ? "💾 Saqlash" : "➕ Qo‘shish"}</button>
       </div>
 
-      <table className="personal-table">
+      <table className="table">
         <thead>
           <tr>
             <th>#</th>
-            <th>Obyekt nomi</th>
-            <th>Ish zonasi</th>
-            <th>Olingan mablag‘</th>
+            <th>Obyekt</th>
+            <th>Zona</th>
+            <th>Mablag‘</th>
             <th>Amallar</th>
           </tr>
         </thead>
         <tbody>
-          {obyektlar.map((obyekt, index) => (
-            <tr key={obyekt.id}>
+          {items.map((item, index) => (
+            <tr key={item.id}>
               <td>{index + 1}</td>
-              <td>{obyekt.name}</td>
-              <td>{obyekt.zona}</td>
-              <td>{obyekt.mablag}</td>
+              <td>{item.name}</td>
+              <td>{item.zona}</td>
+              <td>{item.mablag}</td>
               <td>
-                <button className="edit-btn" onClick={() => handleEdit(obyekt)}>✏️ Tahrirlash</button>
-                <br />
-                <br />
-                <button className="delete-btn" onClick={() => handleDelete(obyekt.id)}>🗑️ O‘chirish</button>
+                <button className="edit-btn" onClick={() => handleEdit(item)}>✏️</button>
+                <button className="delete-btn" onClick={() => handleDelete(item.id)}>🗑️</button>
               </td>
             </tr>
           ))}
